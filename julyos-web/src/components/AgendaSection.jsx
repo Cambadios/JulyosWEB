@@ -1,64 +1,115 @@
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { listenAgenda } from "../services/agendaService";
 
-const fechas = [
-  {
-    fecha: "12 Dic 2025",
-    ciudad: "Cochabamba",
-    detalle: "Show con TURROMANTIKOS",
-  },
-  {
-    fecha: "20 Dic 2025",
-    ciudad: "La Paz",
-    detalle: "Show solista",
-  },
-  {
-    fecha: "05 Ene 2026",
-    ciudad: "Santa Cruz",
-    detalle: "Festival urbano",
-  },
-];
+gsap.registerPlugin(ScrollTrigger);
 
-export default function AgendaSection() {
+const formatFecha = (isoString) => {
+  if (!isoString) return "";
+  const date = new Date(isoString);
+  return date.toLocaleDateString("es-BO", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const AgendaSection = () => {
+  const [fechas, setFechas] = useState([]);
+  const sectionRef = useRef(null);
+
+  // 🔁 Escuchar cambios en Firestore
+  useEffect(() => {
+    const unsub = listenAgenda(setFechas);
+    return () => unsub();
+  }, []);
+
+  // 🎬 Animación con GSAP al hacer scroll
+  useLayoutEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(section, {
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+        },
+        opacity: 0,
+        y: 40,
+        duration: 0.8,
+        ease: "power3.out",
+      });
+
+      gsap.from(".agenda-item", {
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+        },
+        opacity: 0,
+        y: 20,
+        duration: 0.5,
+        ease: "power3.out",
+        stagger: 0.08,
+        delay: 0.1,
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="agenda" className="py-16 px-6 max-w-6xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <h2 className="text-3xl md:text-4xl font-bold">Agenda</h2>
-        <p className="mt-2 text-gray-400 max-w-xl">
-          Próximas presentaciones, giras y fechas clave.
-        </p>
-      </motion.div>
+    <section
+      id="agenda"
+      ref={sectionRef}
+      className="py-16 px-4 max-w-6xl mx-auto"
+    >
+      <h2 className="text-sm tracking-[0.3em] uppercase text-zinc-400 mb-2">
+        Agenda
+      </h2>
+      <h3 className="text-3xl md:text-4xl font-semibold mb-6">
+        Próximas presentaciones
+      </h3>
+      <p className="text-sm text-zinc-400 mb-8 max-w-xl">
+        Fechas actualizadas en tiempo real desde el panel de administración.
+        Aquí encuentras los shows de JULYOS como solista y con TURROMANTIKOS.
+      </p>
 
-      <motion.ul
-        className="mt-8 divide-y divide-purple-900/60 border border-purple-900/60 rounded-2xl overflow-hidden bg-black/40"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ delay: 0.2 }}
-      >
-        {fechas.map((f, idx) => (
-          <motion.li
-            key={idx}
-            className="px-5 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-2"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: idx * 0.05 }}
-          >
-            <div>
-              <p className="text-sm font-semibold text-purple-300">{f.fecha}</p>
-              <p className="text-base md:text-lg font-medium">
-                {f.ciudad}
-              </p>
+      {fechas.length === 0 ? (
+        <p className="text-sm text-zinc-500">
+          Aún no hay fechas cargadas. Vuelve pronto para ver la próxima gira.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {fechas.map((f) => (
+            <div
+              key={f.id}
+              className="agenda-item flex flex-col md:flex-row md:items-center justify-between gap-3 border border-zinc-800 rounded-2xl px-4 py-3 bg-zinc-900/60"
+            >
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-purple-300 mb-1">
+                  {formatFecha(f.fecha)}
+                </p>
+                <p className="text-sm md:text-base font-medium">
+                  {f.lugar || "Lugar por confirmar"}
+                </p>
+                <p className="text-xs text-zinc-400">
+                  {f.ciudad || "Ciudad por confirmar"}
+                </p>
+                {f.descripcion && (
+                  <p className="text-xs text-zinc-400 mt-1">{f.descripcion}</p>
+                )}
+              </div>
+              <div className="text-xs text-zinc-400 md:text-right">
+                <p>Entradas próximamente</p>
+              </div>
             </div>
-            <p className="text-sm text-gray-300">{f.detalle}</p>
-          </motion.li>
-        ))}
-      </motion.ul>
+          ))}
+        </div>
+      )}
     </section>
   );
-}
+};
+
+export default AgendaSection;

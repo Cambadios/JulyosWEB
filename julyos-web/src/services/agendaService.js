@@ -1,39 +1,37 @@
-// src/services/agendaService.js
-import { db } from "../firebase/firebaseConfig";
 import {
   collection,
   addDoc,
-  getDocs,
-  updateDoc,
   deleteDoc,
   doc,
-  query,
+  onSnapshot,
   orderBy,
+  query,
+  serverTimestamp,
 } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
-const agendaCol = collection(db, "agendas");
+const colRef = collection(db, "agenda");
 
-export const crearFecha = async (data) => {
-  // data = { fecha, lugar, ciudad, descripcion, estado }
-  const docRef = await addDoc(agendaCol, {
-    ...data,
-    creadoEn: new Date(),
+// 🔁 Escuchar cambios en tiempo real
+export const listenAgenda = (callback) => {
+  const q = query(colRef, orderBy("fecha", "asc"));
+
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+    }));
+    callback(data);
   });
-  return docRef.id;
 };
 
-export const obtenerFechas = async () => {
-  const q = query(agendaCol, orderBy("fecha", "asc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-};
+// ➕ Agregar fecha nueva (desde admin)
+export const createFechaAgenda = (fechaData) =>
+  addDoc(colRef, {
+    ...fechaData,
+    createdAt: serverTimestamp(),
+  });
 
-export const actualizarFecha = async (id, data) => {
-  const ref = doc(db, "agendas", id);
-  await updateDoc(ref, data);
-};
-
-export const eliminarFecha = async (id) => {
-  const ref = doc(db, "agendas", id);
-  await deleteDoc(ref);
-};
+// 🗑️ Eliminar fecha
+export const deleteFechaAgenda = (id) =>
+  deleteDoc(doc(db, "agenda", id));

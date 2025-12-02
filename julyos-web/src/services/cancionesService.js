@@ -1,38 +1,35 @@
 // src/services/cancionesService.js
-import { db } from "../firebase/firebaseConfig";
 import {
   collection,
   addDoc,
   getDocs,
-  updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp,
+  updateDoc,
   query,
   orderBy,
+  onSnapshot,
 } from "firebase/firestore";
+import { db } from "../firebase/firebaseConfig";
 
-const cancionesCol = collection(db, "canciones");
+const colRef = collection(db, "canciones");
 
-export const crearCancion = async (data) => {
-  const docRef = await addDoc(cancionesCol, {
-    ...data,
-    creadoEn: new Date(),
+export const listenCanciones = (callback) => {
+  const q = query(colRef, orderBy("createdAt", "desc"));
+  return onSnapshot(q, (snapshot) => {
+    const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    callback(data);
   });
-  return docRef.id;
 };
 
-export const obtenerCanciones = async () => {
-  const q = query(cancionesCol, orderBy("creadoEn", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
-};
+export const createCancion = (cancion) =>
+  addDoc(colRef, {
+    ...cancion,
+    createdAt: serverTimestamp(),
+  });
 
-export const actualizarCancion = async (id, data) => {
-  const ref = doc(db, "canciones", id);
-  await updateDoc(ref, data);
-};
+export const deleteCancion = (id) => deleteDoc(doc(db, "canciones", id));
 
-export const eliminarCancion = async (id) => {
-  const ref = doc(db, "canciones", id);
-  await deleteDoc(ref);
-};
+export const updateCancion = (id, data) =>
+  updateDoc(doc(db, "canciones", id), data);

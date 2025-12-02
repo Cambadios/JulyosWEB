@@ -1,76 +1,122 @@
-import { motion } from "framer-motion";
+// src/components/Hero.jsx
+import { useLayoutEffect, useRef } from "react";
+import gsap from "gsap";
+import HeroScene from "../components/HeroScene"; // este será el 3D con Three.js (lo hacemos abajo)
 
-export default function Hero() {
+const Hero = () => {
+  const root = useRef(null);
+
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline();
+
+      tl.from(".hero-badge", {
+        y: -20,
+        opacity: 0,
+        duration: 0.6,
+        ease: "power3.out",
+      })
+        .from(
+          ".hero-title-line",
+          {
+            y: 40,
+            opacity: 0,
+            duration: 0.7,
+            ease: "power3.out",
+            stagger: 0.1,
+          },
+          "-=0.3"
+        )
+        .from(
+          ".hero-text",
+          {
+            y: 20,
+            opacity: 0,
+            duration: 0.6,
+            ease: "power3.out",
+          },
+          "-=0.2"
+        )
+        .from(
+          ".hero-cta",
+          {
+            y: 10,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power3.out",
+            stagger: 0.1,
+          },
+          "-=0.3"
+        );
+    }, root);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <section
-      id="inicio"
-      className="min-h-screen grid md:grid-cols-2 items-center px-6 pt-32 md:pt-36 max-w-6xl mx-auto gap-10"
+      ref={root}
+      className="relative overflow-hidden pt-28 pb-20 px-4 max-w-6xl mx-auto"
     >
-      <motion.div
-        initial={{ opacity: 0, x: -40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.7 }}
-      >
-        <p className="text-xs tracking-[0.3em] text-purple-400 uppercase">
-          Artista urbano • Bolivia
-        </p>
+      {/* Fondo 3D con Three.js */}
+      <HeroScene />
 
-        <h1 className="mt-4 text-5xl md:text-6xl font-black tracking-[0.25em]">
-          JULYOS
-        </h1>
+      {/* Capa de contenido encima */}
+      <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/50 bg-purple-500/10 text-[11px] uppercase tracking-[0.25em] text-purple-200 mb-4">
+            <span>JULYOS</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+            <span>Bolivia</span>
+          </div>
 
-        <p className="mt-5 text-gray-300 max-w-md">
-          Sonido urbano con esencia de la calle. Integrante de{" "}
-          <span className="text-purple-400 font-semibold">TURROMANTIKOS</span> y
-          artista solista con visión global.
-        </p>
+          <h1 className="space-y-1 text-4xl md:text-5xl font-semibold leading-tight">
+            <div className="hero-title-line">Trap sentimental</div>
+            <div className="hero-title-line text-purple-400">
+              & TURROMANTIKOS vibes
+            </div>
+          </h1>
 
-        <div className="mt-8 flex flex-wrap gap-4">
-          <a
-            href="#musica"
-            className="px-6 py-3 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-400 hover:to-fuchsia-400 text-sm font-medium transition"
-          >
-            🎧 Escuchar música
-          </a>
-          <a
-            href="#agenda"
-            className="px-6 py-3 rounded-full border border-purple-500/70 hover:bg-purple-500/10 text-sm font-medium transition"
-          >
-            🎤 Ver próximas fechas
-          </a>
-        </div>
+          <p className="hero-text mt-4 text-sm md:text-base text-zinc-300 max-w-md">
+            Música urbana desde Bolivia, mezclando trap, romanticismo y calle.
+            Shows en vivo, lanzamientos y todo el universo de JULYOS en un solo lugar.
+          </p>
 
-        <div className="mt-8 flex flex-wrap gap-4 text-xs text-gray-400">
-          <a href="#" target="_blank" className="hover:text-purple-400">
-            Instagram
-          </a>
-          <a href="#" target="_blank" className="hover:text-purple-400">
-            TikTok
-          </a>
-          <a href="#" target="_blank" className="hover:text-purple-400">
-            YouTube
-          </a>
-          <a href="#" target="_blank" className="hover:text-purple-400">
-            Spotify
-          </a>
-        </div>
-      </motion.div>
-
-      <motion.div
-        className="flex justify-center md:justify-end"
-        initial={{ opacity: 0, x: 40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.7, delay: 0.1 }}
-      >
-        <div className="relative w-64 h-80 md:w-72 md:h-96">
-          <div className="absolute -inset-1 bg-gradient-to-tr from-purple-500 via-fuchsia-500 to-blue-500 blur-xl opacity-60" />
-          <div className="relative w-full h-full rounded-3xl border border-purple-400/40 bg-gradient-to-b from-black/80 to-purple-950/60 flex items-center justify-center">
-            <span className="text-[0.7rem] tracking-[0.35em] text-gray-300 uppercase">
-              Foto JULYOS / Arte
-            </span>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href="#musica"
+              className="hero-cta inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-xs uppercase tracking-[0.25em]"
+            >
+              Escuchar ahora
+            </a>
+            <a
+              href="#agenda"
+              className="hero-cta inline-flex items-center justify-center px-5 py-2.5 rounded-full border border-zinc-600 hover:border-purple-400 text-xs uppercase tracking-[0.25em]"
+            >
+              Ver agenda
+            </a>
           </div>
         </div>
-      </motion.div>
+
+        {/* Tarjeta de info derecha la puedes dejar como ya la tenías */}
+        <div className="relative">
+          <div className="absolute -inset-8 bg-purple-500/20 blur-3xl opacity-60" />
+          <div className="relative bg-zinc-900/70 border border-zinc-700/80 rounded-3xl p-6 backdrop-blur-xl">
+            <p className="text-xs text-zinc-400 mb-2">Próximo show</p>
+            <p className="text-lg font-semibold mb-1">
+              TURROMANTIKOS • Santa Cruz
+            </p>
+            <p className="text-sm text-zinc-300 mb-4">
+              Viernes 05 Ene 2026 · 22:00
+            </p>
+            <p className="text-xs text-zinc-400">
+              Actualizado en tiempo real desde el panel de administración.
+            </p>
+          </div>
+        </div>
+      </div>
     </section>
   );
-}
+};
+
+export default Hero;
