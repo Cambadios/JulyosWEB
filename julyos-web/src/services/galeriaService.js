@@ -13,7 +13,6 @@ import { db } from "../firebase/firebaseConfig";
 
 const colRef = collection(db, "galeria");
 
-// 🔁 Escuchar galería en tiempo real
 export const listenGaleria = (callback) => {
   const q = query(colRef, orderBy("createdAt", "desc"));
 
@@ -26,13 +25,11 @@ export const listenGaleria = (callback) => {
   });
 };
 
-// ➕ Crear item de galería
 export const createItemGaleria = (item) =>
   addDoc(colRef, {
     ...item,
     createdAt: serverTimestamp(),
   });
 
-// 🗑️ Eliminar item
 export const deleteItemGaleria = (id) =>
   deleteDoc(doc(db, "galeria", id));

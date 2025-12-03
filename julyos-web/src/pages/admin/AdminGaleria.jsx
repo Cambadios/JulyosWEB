@@ -5,7 +5,6 @@ import {
   createItemGaleria,
   deleteItemGaleria,
 } from "../../services/galeriaService";
-import { uploadImage, deleteImage } from "../../services/storageService";
 
 const opcionesTipo = [
   "Show en vivo",
@@ -19,8 +18,8 @@ const AdminGaleria = () => {
   const [items, setItems] = useState([]);
   const [titulo, setTitulo] = useState("");
   const [tipo, setTipo] = useState(opcionesTipo[0]);
-  const [archivo, setArchivo] = useState(null);
-  const [subiendo, setSubiendo] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -32,35 +31,28 @@ const AdminGaleria = () => {
     e.preventDefault();
     setError("");
 
-    if (!archivo) {
-      setError("Selecciona una imagen para subir.");
+    if (!imageUrl) {
+      setError("Pega la URL de una imagen.");
       return;
     }
 
     try {
-      setSubiendo(true);
+      setGuardando(true);
 
-      // 1️⃣ Subir imagen a Storage
-      const { url, path } = await uploadImage(archivo, "galeria");
-
-      // 2️⃣ Guardar metadatos en Firestore
       await createItemGaleria({
-        titulo: titulo || archivo.name,
+        titulo: titulo || "Foto sin título",
         tipo,
-        imageUrl: url,
-        storagePath: path,
+        imageUrl,
       });
 
-      // 3️⃣ Limpiar
       setTitulo("");
       setTipo(opcionesTipo[0]);
-      setArchivo(null);
-      (document.getElementById("file-galeria") || {}).value = "";
+      setImageUrl("");
     } catch (err) {
       console.error(err);
-      setError("Error al subir la imagen. Intenta nuevamente.");
+      setError("Error al guardar la imagen. Revisa la URL.");
     } finally {
-      setSubiendo(false);
+      setGuardando(false);
     }
   };
 
@@ -69,7 +61,6 @@ const AdminGaleria = () => {
 
     try {
       await deleteItemGaleria(item.id);
-      await deleteImage(item.storagePath);
     } catch (err) {
       console.error(err);
       alert("Error eliminando la imagen.");
@@ -115,25 +106,24 @@ const AdminGaleria = () => {
         </div>
 
         <div>
-          <label className="block text-xs mb-1">Imagen</label>
+          <label className="block text-xs mb-1">URL de la imagen</label>
           <input
-            id="file-galeria"
-            type="file"
-            accept="image/*"
-            className="w-full text-sm"
-            onChange={(e) => setArchivo(e.target.files?.[0] || null)}
+            className="w-full text-sm px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            placeholder="https://tuservidor.com/imagen.jpg"
           />
           <p className="mt-1 text-[10px] text-zinc-500">
-            Sube una imagen en formato JPG o PNG. Tamaño recomendado: 1200x800.
+            Sube tus fotos a otro servicio (p.ej. Imgur, Cloudinary, carpeta estática) y pega aquí la URL directa de la imagen.
           </p>
         </div>
 
         <button
           type="submit"
-          disabled={subiendo}
+          disabled={guardando}
           className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-60 text-xs tracking-[0.2em] uppercase"
         >
-          {subiendo ? "Subiendo..." : "Agregar a galería"}
+          {guardando ? "Guardando..." : "Agregar a galería"}
         </button>
       </form>
 
@@ -174,7 +164,7 @@ const AdminGaleria = () => {
 
         {items.length === 0 && (
           <p className="text-xs text-zinc-500">
-            Aún no hay imágenes en la galería. Sube la primera arriba.
+            Aún no hay imágenes en la galería. Agrega la primera arriba.
           </p>
         )}
       </div>

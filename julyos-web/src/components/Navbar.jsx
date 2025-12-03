@@ -12,7 +12,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-fuchsia-500" />
           <h1 className="text-lg md:text-xl font-bold tracking-[0.3em]">
-            JULYOS
+            JULYO$
           </h1>
         </div>
 

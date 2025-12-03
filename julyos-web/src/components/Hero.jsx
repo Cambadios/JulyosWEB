@@ -65,7 +65,7 @@ const Hero = () => {
       <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
         <div>
           <div className="hero-badge inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/50 bg-purple-500/10 text-[11px] uppercase tracking-[0.25em] text-purple-200 mb-4">
-            <span>JULYOS</span>
+            <span>JULYO$</span>
             <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
             <span>Bolivia</span>
           </div>
@@ -79,7 +79,7 @@ const Hero = () => {
 
           <p className="hero-text mt-4 text-sm md:text-base text-zinc-300 max-w-md">
             Música urbana desde Bolivia, mezclando trap, romanticismo y calle.
-            Shows en vivo, lanzamientos y todo el universo de JULYOS en un solo lugar.
+            Shows en vivo, lanzamientos y todo el universo de JULYO$ en un solo lugar.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
